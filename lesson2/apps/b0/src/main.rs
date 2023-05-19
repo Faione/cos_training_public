@@ -16,12 +16,30 @@ fn main() {
 
 /* Todo: Implement it */
 fn traverse_drivers() {
-    libos::println!("\n!!! Fix it !!!\n");
+    // libos::println!("\n!!! Fix it !!!\n");
+
+    extern "C" {
+        fn init_calls_start();
+        fn init_calls_end();
+    }
+
+    let (start, end) = unsafe { (init_calls_start as usize, init_calls_end as usize) };
+
     // Parse range of init_calls by calling C function.
-    // display_initcalls_range(range_start, range_end);
+    display_initcalls_range(start, end);
 
     // For each driver, display name & compatible
-    // display_drv_info(drv.name, drv.compatible);
+    let call_entries = unsafe {
+        core::slice::from_raw_parts(
+            start as *mut CallEntry,
+            (end - start) / core::mem::size_of::<CallEntry>(),
+        )
+    };
+
+    call_entries.into_iter().for_each(|entry| {
+        let drv = (entry.init_fn)();
+        display_drv_info(drv.name, drv.compatible);
+    });
 }
 
 fn display_initcalls_range(start: usize, end: usize) {
