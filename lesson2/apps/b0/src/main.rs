@@ -18,11 +18,13 @@ fn main() {
 fn traverse_drivers() {
     // libos::println!("\n!!! Fix it !!!\n");
 
+    // 读取符号
     extern "C" {
         fn init_calls_start();
         fn init_calls_end();
     }
 
+    // 直接获取符号的地址
     let (start, end) = unsafe { (init_calls_start as usize, init_calls_end as usize) };
 
     // Parse range of init_calls by calling C function.
@@ -31,7 +33,7 @@ fn traverse_drivers() {
     // For each driver, display name & compatible
     let call_entries = unsafe {
         core::slice::from_raw_parts(
-            start as *mut CallEntry,
+            start as *const CallEntry,
             (end - start) / core::mem::size_of::<CallEntry>(),
         )
     };
